@@ -87,10 +87,7 @@ public class GenericDataReader<T>(IEnumerable<T> items) : IDataReader
     }
 
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)]
-    public Type GetFieldType(int i)
-    {
-        throw new NotImplementedException();
-    }
+    public Type GetFieldType(int i) => _properties[i].GetType();
 
     public float GetFloat(int i)
     {

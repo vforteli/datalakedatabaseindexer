@@ -350,3 +350,6 @@ MigrationBackup/
 
 appsettings.json
 .env
+db_migration.sql
+
+.DS_Store

@@ -1,5 +1,4 @@
 ﻿using DatabaseIndexer;
-using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -9,9 +8,10 @@ var logger = loggerFactory.CreateLogger<Program>();
 
 var mockPaths = Utils.GetMockPaths();
 
-var datalakeIndexer = new DatalakeIndexer(new SqlConnection(config["connectionString"]), loggerFactory.CreateLogger<DatalakeIndexer>());
+var sqlConnectionFactory = new SqlConnectionFactory(config["connectionString"] ?? throw new ArgumentNullException("..."));
+var datalakeIndexer = new DatalakeIndexer(sqlConnectionFactory, loggerFactory.CreateLogger<DatalakeIndexer>());
 
 
 logger.LogInformation("Starting path upsert...");
-var rowsAffected = await datalakeIndexer.UpsertPathsAsync(mockPaths);
+var rowsAffected = datalakeIndexer.UpsertPathsAsync(mockPaths).ToBlockingEnumerable();
 logger.LogInformation("Upsert done, rows affected {rows}", rowsAffected);

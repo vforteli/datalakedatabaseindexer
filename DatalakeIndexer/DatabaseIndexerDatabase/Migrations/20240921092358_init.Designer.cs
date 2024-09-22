@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DatabaseIndexerDatabase.Migrations
 {
     [DbContext(typeof(DatalakeindexerContext))]
-    [Migration("20240914085711_init")]
+    [Migration("20240921092358_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -25,19 +25,22 @@ namespace DatabaseIndexerDatabase.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DatabaseIndexerDatabase.GeneratedDatabase.Path", b =>
+            modelBuilder.Entity("DatabaseIndexerDatabase.GeneratedDatabase.Paths", b =>
                 {
-                    b.Property<long>("PathId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PathId"));
+                    b.Property<byte[]>("PathKey")
+                        .HasMaxLength(32)
+                        .HasColumnType("binary(32)")
+                        .IsFixedLength();
 
                     b.Property<DateTimeOffset?>("CreatedOn")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<DateTimeOffset?>("DeletedOn")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("ETag")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("FilesystemName")
                         .IsRequired()
@@ -47,27 +50,46 @@ namespace DatabaseIndexerDatabase.Migrations
                     b.Property<DateTimeOffset?>("LastModified")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("Path1")
+                    b.Property<string>("Path")
                         .IsRequired()
                         .HasMaxLength(1024)
-                        .HasColumnType("nvarchar(1024)")
-                        .HasColumnName("Path");
+                        .HasColumnType("nvarchar(1024)");
 
-                    b.Property<string>("PathReversed")
+                    b.Property<string>("Path_reversed")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)")
-                        .HasColumnName("Path_reversed")
                         .HasComputedColumnSql("(reverse([Path]))", false);
 
-                    b.HasKey("PathId");
+                    b.HasKey("PathKey");
 
-                    b.HasIndex(new[] { "FilesystemName", "PathReversed" }, "filesystem_path_reversed");
+                    SqlServerKeyBuilderExtensions.IsClustered(b.HasKey("PathKey"), false);
 
-                    b.HasIndex(new[] { "FilesystemName", "Path1" }, "path_filesystem_unique")
+                    b.HasIndex(new[] { "FilesystemName", "Path_reversed" }, "filesystem_path_reversed");
+
+                    b.HasIndex(new[] { "FilesystemName", "Path" }, "path_filesystem_unique");
+
+                    SqlServerIndexBuilderExtensions.IsClustered(b.HasIndex(new[] { "FilesystemName", "Path" }, "path_filesystem_unique"));
+
+                    b.HasIndex(new[] { "PathKey" }, "path_key")
                         .IsUnique();
 
                     b.ToTable("Paths");
+                });
+
+            modelBuilder.Entity("DatabaseIndexerDatabase.GeneratedDatabase.PathsMetadata", b =>
+                {
+                    b.Property<byte[]>("PathKey")
+                        .HasMaxLength(32)
+                        .HasColumnType("binary(32)")
+                        .IsFixedLength();
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("PathKey");
+
+                    b.ToTable("PathsMetadata");
                 });
 #pragma warning restore 612, 618
         }

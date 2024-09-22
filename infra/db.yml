@@ -40,7 +40,7 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 8Gi
+            storage: 16Gi
 
 ---
 apiVersion: v1
@@ -53,5 +53,5 @@ spec:
     statefulset.kubernetes.io/pod-name: mssql-0
   ports:
     - protocol: TCP
-      port: 1433
+      port: 1434
       targetPort: 1433

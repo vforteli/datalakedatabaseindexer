@@ -3,19 +3,21 @@ using System.Collections.Generic;
 
 namespace DatabaseIndexerDatabase.GeneratedDatabase;
 
-public partial class Path
+public partial class Paths
 {
-    public long PathId { get; set; }
+    public byte[] PathKey { get; set; } = null!;
 
     public string FilesystemName { get; set; } = null!;
 
-    public string Path1 { get; set; } = null!;
+    public string Path { get; set; } = null!;
 
-    public string? PathReversed { get; set; }
+    public string? Path_reversed { get; set; }
 
     public DateTimeOffset? CreatedOn { get; set; }
 
     public DateTimeOffset? LastModified { get; set; }
 
     public DateTimeOffset? DeletedOn { get; set; }
+
+    public string? ETag { get; set; }
 }

@@ -1,0 +1,39 @@
+name: DatalakeIndexer
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull Docker image
+        run: docker pull mcr.microsoft.com/azure-sql-edge
+
+      - name: Run Docker container
+        run: docker run -e 'ACCEPT_EULA=1' -e 'MSSQL_SA_PASSWORD=Top1Secret!' -p 1434:1433 --name azuresqledge -d mcr.microsoft.com/azure-sql-edge
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        working-directory: DatalakeIndexer
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        working-directory: DatalakeIndexer
+        run: dotnet build -c Release --no-restore
+
+      # ok so technically this should poll and wait for the sql container to be responsive...
+      - name: Test
+        working-directory: DatalakeIndexer
+        run: dotnet test -c Release --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura
