@@ -15,7 +15,7 @@ var mockPaths = Utils.GetMockPaths(10, 1000, 1000);
 // await cassandraIndexer.UpsertPathsAsync(mockPaths, 100);
 // logger.LogInformation("Upsert done, rows affected {rows}", -1);
 
-var dataSource =
+using var dataSource =
     new NpgsqlDataSourceBuilder(config["pgConnectionString"] ?? throw new ArgumentNullException("pgConnectionString"))
         .Build();
 
