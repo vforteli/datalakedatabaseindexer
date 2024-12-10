@@ -27,7 +27,8 @@ public static class NpgsqlConnectionExtensions
             await writer.StartRowAsync().ConfigureAwait(false);
             for (var i = 0; i < dataReader.FieldCount; i++)
             {
-                await writer.WriteAsync(dataReader.GetValue(i)).ConfigureAwait(false);
+                var value = dataReader.GetValue(i);
+                await writer.WriteAsync(value).ConfigureAwait(false);
             }
         }
 

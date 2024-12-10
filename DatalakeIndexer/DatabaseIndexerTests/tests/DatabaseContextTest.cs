@@ -10,6 +10,6 @@ public class DatabaseContextTest : DatabaseTest
     public async Task TestSomething()
     {
         var context = SetupServiceProvider.GetRequiredService<DatalakeindexerContext>();
-        var path = await context.Paths.SingleOrDefaultAsync(o => o.Path == "blaa");
+        Assert.DoesNotThrowAsync(async () => await context.Paths.SingleOrDefaultAsync(o => o.Path == "blaa"));
     }
 }

@@ -57,7 +57,7 @@ public class PGServerIndexer(NpgsqlDataSource dataSource, ILogger<PGServerIndexe
             MERGE INTO paths
             USING paths_temp
             ON paths.path_key = paths_temp.path_key
-            WHEN MATCHED AND paths.etag != paths_temp.etag THEN
+            WHEN MATCHED AND paths.etag IS NULL OR paths.etag != paths_temp.etag THEN
                 UPDATE SET 
                     created_on = paths_temp.created_on, 
                     last_modified = paths_temp.last_modified, 
@@ -120,43 +120,42 @@ public class PGServerIndexer(NpgsqlDataSource dataSource, ILogger<PGServerIndexe
         await connection.ExecuteScalarAsync(
             """
             CREATE TEMP TABLE paths_metadata_temp AS SELECT * FROM paths_metadata LIMIT 0;
-            ALTER TABLE paths_metadata_temp ADD is_update BIT;
             ALTER TABLE paths_metadata_temp ADD etag varchar(20);
+            ALTER TABLE paths_metadata_temp ALTER COLUMN metadata_json TYPE varchar(4096);
+
             """);
 
         await connection.BulkLoadAsync(logger, rows, "paths_metadata_temp");
 
-        var (updateCount, insertCount) = await connection.QuerySingleOrDefaultAsync<(int updateCount, int insertCount)>(
+        var affectedRows = (await connection.QueryAsync<PathMetadataRowTypeUpsert>(
             """
-            UPDATE #pathsmetadata SET IsUpdate = 1 WHERE PathKey IN (SELECT PathKey FROM PathsMetadata)
+            MERGE INTO paths_metadata
+            USING paths_metadata_temp
+            ON paths_metadata.path_key = paths_metadata_temp.path_key
+            WHEN MATCHED THEN
+                UPDATE SET 
+                    metadata_json = paths_metadata_temp.metadata_json::jsonb
 
-            INSERT INTO PathsMetadata (PathKey, MetadataJson)
-                SELECT s.PathKey, s.MetadataJson
-                FROM #pathsmetadata AS s               
-                WHERE IsUpdate IS NULL AND s.MetadataJson IS NOT NULL
+            WHEN NOT MATCHED THEN
+                INSERT (path_key, metadata_json)
+                VALUES (paths_metadata_temp.path_key, paths_metadata_temp.metadata_json::jsonb)
 
-            DECLARE @insertCount INT = @@ROWCOUNT
+            RETURNING
+                merge_action() as action, paths_metadata_temp.*
+            ;
+            
+            UPDATE paths
+            SET etag = paths_metadata_temp.etag
+            FROM paths_metadata_temp
+            WHERE paths.path_key = paths_metadata_temp.path_key;
+            
+            DROP TABLE paths_metadata_temp;
+            """)).AsList();
 
-
-            UPDATE metadata SET 
-                metadata.MetadataJson = temp.MetadataJson              
-            FROM PathsMetadata AS metadata
-            INNER JOIN #pathsmetadata AS temp ON metadata.PathKey = temp.PathKey
-            WHERE temp.IsUpdate = 1
-
-            DECLARE @updateCount INT = @@ROWCOUNT       
-
-            UPDATE paths SET 
-                paths.ETag = temp.ETag              
-            FROM Paths paths
-            INNER JOIN #pathsmetadata AS temp ON temp.PathKey = paths.PathKey
-
-            DROP TABLE #pathsmetadata
-
-            SELECT @updateCount AS UpdateCount, @insertCount AS InsertCount
-            """);
-
+        var updateCount = affectedRows.Count(o => o.action == "UPDATE");
+        var insertCount = affectedRows.Count(o => o.action == "INSERT");
         var totalRowsAffected = updateCount + insertCount;
+
 
         logger.LogInformation("Upserted {rows} into metadata. Inserts: {inserts}, updates: {updates}",
             totalRowsAffected, insertCount, updateCount);

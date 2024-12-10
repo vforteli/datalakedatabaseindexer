@@ -27,6 +27,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "postgresql", "postgresql", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGDatabaseContext", "PGDatabaseContext\PGDatabaseContext.csproj", "{D96B8962-2B06-4EB7-93BC-34BBE84BDD30}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PGIndexerTests", "PGIndexerTests\PGIndexerTests.csproj", "{2C2F531B-5106-41EB-8280-A4E084EF8A9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{D96B8962-2B06-4EB7-93BC-34BBE84BDD30}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D96B8962-2B06-4EB7-93BC-34BBE84BDD30}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D96B8962-2B06-4EB7-93BC-34BBE84BDD30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C2F531B-5106-41EB-8280-A4E084EF8A9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C2F531B-5106-41EB-8280-A4E084EF8A9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C2F531B-5106-41EB-8280-A4E084EF8A9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C2F531B-5106-41EB-8280-A4E084EF8A9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -80,5 +86,6 @@ Global
 		{93ADAE31-AD2D-4099-8999-0B877851C1C1} = {C579C9C4-B5DC-491E-9628-D133DC6EF446}
 		{43597F8C-3266-4AB5-93EC-3E4A13324CB6} = {CC3D717C-D249-4953-9E67-4D9CAE896647}
 		{D96B8962-2B06-4EB7-93BC-34BBE84BDD30} = {CC3D717C-D249-4953-9E67-4D9CAE896647}
+		{2C2F531B-5106-41EB-8280-A4E084EF8A9B} = {CC3D717C-D249-4953-9E67-4D9CAE896647}
 	EndGlobalSection
 EndGlobal

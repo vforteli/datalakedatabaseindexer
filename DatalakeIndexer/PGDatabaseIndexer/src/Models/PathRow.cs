@@ -25,3 +25,8 @@ public record PathMetadataRowType
     public required string? metadata_json { get; init; }
     public required string etag { get; init; }
 }
+
+public record PathMetadataRowTypeUpsert : PathMetadataRowType
+{
+    public required string action { get; init; }
+}
