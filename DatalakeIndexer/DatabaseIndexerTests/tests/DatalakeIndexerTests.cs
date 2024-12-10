@@ -18,7 +18,7 @@ public class DatalakeIndexerTests : DatabaseTest
     [Test]
     public void UpsertPathsAsync_empty()
     {
-        var indexer = TestServiceProvider.GetRequiredService<DatalakeIndexer>();
+        var indexer = TestServiceProvider.GetRequiredService<SqlServerIndexer>();
 
         var paths = new List<PathRowType>();
 
@@ -30,7 +30,7 @@ public class DatalakeIndexerTests : DatabaseTest
     [Test]
     public void UpsertPathsAsync_returns_inserted()
     {
-        var indexer = TestServiceProvider.GetRequiredService<DatalakeIndexer>();
+        var indexer = TestServiceProvider.GetRequiredService<SqlServerIndexer>();
 
         var paths = new List<PathRowType>
         {
@@ -51,7 +51,7 @@ public class DatalakeIndexerTests : DatabaseTest
     [Test]
     public void UpsertPathsAsync_returns_updated()
     {
-        var indexer = TestServiceProvider.GetRequiredService<DatalakeIndexer>();
+        var indexer = TestServiceProvider.GetRequiredService<SqlServerIndexer>();
 
         var paths = new List<PathRowType>
         {
@@ -81,7 +81,7 @@ public class DatalakeIndexerTests : DatabaseTest
     [Test]
     public async Task UpsertPathsAsync_metadata_modified()
     {
-        var indexer = TestServiceProvider.GetRequiredService<DatalakeIndexer>();
+        var indexer = TestServiceProvider.GetRequiredService<SqlServerIndexer>();
 
         var paths = new List<PathRowType>
         {

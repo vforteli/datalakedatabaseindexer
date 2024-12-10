@@ -34,3 +34,26 @@ Console application for testing the indexer with various sources
 ### IndexerWorker
 
 Console application for receiving blob created events and.. do stuff
+
+## Cassandra
+
+### Connectiing
+
+```
+nerdctl pull cassandra:latest
+nerdctl run --rm -it cassandra:latest cqlsh <ip>
+
+CREATE KEYSPACE indexer WITH replication = {'class': 'SimpleStrategy', 'replication_factor' : 3};
+
+CREATE TABLE paths (
+    filesystem_name text,
+    path text,
+    path_segments list<text>,
+    created_on timestamp,
+    last_modified timestamp,
+    deleted_on timestamp,
+    etag text,
+    path_key blob,
+    PRIMARY KEY (filesystem_name, path)
+);
+```

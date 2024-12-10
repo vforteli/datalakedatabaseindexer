@@ -353,3 +353,4 @@ appsettings.json
 db_migration.sql
 
 .DS_Store
+.idea/

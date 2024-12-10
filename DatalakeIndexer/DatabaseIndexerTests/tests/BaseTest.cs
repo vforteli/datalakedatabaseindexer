@@ -55,7 +55,7 @@ public abstract class BaseTest
         services.AddSingleton<ISqlConnectionFactory>(o => new SqlConnectionFactory(ConnectionString));
         services.AddLogging();
 
-        services.AddTransient<DatalakeIndexer>();
+        services.AddTransient<SqlServerIndexer>();
 
         return services;
     }

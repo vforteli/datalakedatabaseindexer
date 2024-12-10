@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace DatabaseIndexer;
 
-public class DatalakeIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger<DatalakeIndexer> logger)
+public class SqlServerIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger<SqlServerIndexer> logger)
 {
     /// <summary>
     /// Upsert paths.
@@ -13,7 +13,7 @@ public class DatalakeIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger
     /// </summary>
     public async IAsyncEnumerable<PathRowType> UpsertPathsAsync(IEnumerable<PathRowType> paths, int chunkSize = 50000)
     {
-        using var connection = sqlConnectionFactory.Create();
+        await using var connection = sqlConnectionFactory.Create();
         await connection.OpenAsync();
 
         var totalRowsAffected = 0;
@@ -47,7 +47,7 @@ public class DatalakeIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger
     /// </summary>
     public async Task<int> UpsertPathsMetadataAsync(IEnumerable<PathMetadataRowType> paths, int chunkSize = 50000)
     {
-        using var connection = sqlConnectionFactory.Create();
+        await using var connection = sqlConnectionFactory.Create();
         await connection.OpenAsync();
 
         var totalRowsAffected = 0;
@@ -69,18 +69,20 @@ public class DatalakeIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger
     }
 
 
-    internal async Task<UpsertResult<PathRowType>> UpsertPathsBatchAsync(SqlConnection connection, IEnumerable<PathRowType> rows, int batchSize)
+    internal async Task<UpsertResult<PathRowType>> UpsertPathsBatchAsync(SqlConnection connection,
+        IEnumerable<PathRowType> rows, int batchSize)
     {
         await connection.ExecuteScalarAsync("""
-            SELECT TOP(0) * INTO #paths FROM Paths
-            ALTER TABLE #paths ADD IsInsert BIT            
-            """);
+                                            SELECT TOP(0) * INTO #paths FROM Paths
+                                            ALTER TABLE #paths ADD IsInsert BIT            
+                                            """);
 
         var rowsCopied = await connection.BulkLoadAsync(logger, rows, "#paths", batchSize);
 
-        var result = await connection.QueryMultipleAsync("""
+        var result = await connection.QueryMultipleAsync(
+            """
             UPDATE #paths SET IsInsert = 1 WHERE PathKey NOT IN (SELECT PathKey FROM Paths)
-            
+
             INSERT INTO Paths (FilesystemName, Path, CreatedOn, LastModified, DeletedOn, PathKey)
                 SELECT temp.FilesystemName, temp.Path, temp.CreatedOn, temp.LastModified, temp.DeletedOn, temp.PathKey
                 FROM #paths AS temp
@@ -115,15 +117,18 @@ public class DatalakeIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger
 
         var modifiedRows = await result.ReadAsync<PathRowType>();
 
-        logger.LogInformation("Upserted {rows} into paths. Inserts: {inserts}, updates: {updates}", totalRowsAffected, insertCount, updateCount);
+        logger.LogInformation("Upserted {rows} into paths. Inserts: {inserts}, updates: {updates}", totalRowsAffected,
+            insertCount, updateCount);
 
         return new UpsertResult<PathRowType>(updateCount, insertCount, rowsCopied, modifiedRows.AsList());
     }
 
 
-    internal async Task<int> UpsertPathsMetadataBatchAsync(SqlConnection connection, IEnumerable<PathMetadataRowType> rows, int batchSize)
+    internal async Task<int> UpsertPathsMetadataBatchAsync(SqlConnection connection,
+        IEnumerable<PathMetadataRowType> rows, int batchSize)
     {
-        await connection.ExecuteScalarAsync("""
+        await connection.ExecuteScalarAsync(
+            """
             SELECT TOP(0) * INTO #pathsmetadata FROM PathsMetadata
             ALTER TABLE #pathsmetadata ADD IsUpdate BIT
             ALTER TABLE #pathsmetadata ADD ETag nvarchar(20)
@@ -131,17 +136,18 @@ public class DatalakeIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger
 
         await connection.BulkLoadAsync(logger, rows, "#pathsmetadata", batchSize);
 
-        var (updateCount, insertCount) = await connection.QuerySingleOrDefaultAsync<(int updateCount, int insertCount)>("""
+        var (updateCount, insertCount) = await connection.QuerySingleOrDefaultAsync<(int updateCount, int insertCount)>(
+            """
             UPDATE #pathsmetadata SET IsUpdate = 1 WHERE PathKey IN (SELECT PathKey FROM PathsMetadata)
-            
+
             INSERT INTO PathsMetadata (PathKey, MetadataJson)
                 SELECT s.PathKey, s.MetadataJson
                 FROM #pathsmetadata AS s               
                 WHERE IsUpdate IS NULL AND s.MetadataJson IS NOT NULL
-            
+
             DECLARE @insertCount INT = @@ROWCOUNT
 
-            
+
             UPDATE metadata SET 
                 metadata.MetadataJson = temp.MetadataJson              
             FROM PathsMetadata AS metadata
@@ -162,7 +168,8 @@ public class DatalakeIndexer(ISqlConnectionFactory sqlConnectionFactory, ILogger
 
         var totalRowsAffected = updateCount + insertCount;
 
-        logger.LogInformation("Upserted {rows} into metadata. Inserts: {inserts}, updates: {updates}", totalRowsAffected, insertCount, updateCount);
+        logger.LogInformation("Upserted {rows} into metadata. Inserts: {inserts}, updates: {updates}",
+            totalRowsAffected, insertCount, updateCount);
 
         return totalRowsAffected;
     }

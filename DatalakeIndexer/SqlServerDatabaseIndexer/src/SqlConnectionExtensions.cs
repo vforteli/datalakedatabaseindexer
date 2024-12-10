@@ -9,7 +9,7 @@ public static class SqlConnectionExteions
     /// Bulk load some IEnumerable into specified temp table
     /// All properties will be inserted into columns with matching names
     /// </summary>
-    internal static async Task<int> BulkLoadAsync<T>(this SqlConnection connection, ILogger<DatalakeIndexer> logger, IEnumerable<T> rows, string tableName, int batchSize)
+    internal static async Task<int> BulkLoadAsync<T>(this SqlConnection connection, ILogger<SqlServerIndexer> logger, IEnumerable<T> rows, string tableName, int batchSize)
     {
         using var bulk = new SqlBulkCopy(connection)
         {
