@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PGDatabaseContext.GeneratedDatabase;
@@ -11,9 +12,11 @@ using PGDatabaseContext.GeneratedDatabase;
 namespace PGDatabaseContext.Migrations
 {
     [DbContext(typeof(PgIndexerContext))]
-    partial class PgIndexerContextModelSnapshot : ModelSnapshot
+    [Migration("20241211194545_etagfixes")]
+    partial class etagfixes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -37,6 +37,7 @@ public partial class PgIndexerContext : DbContext
         {
             entity.HasKey(e => e.path_key).HasName("paths_metadata_pk");
 
+            entity.Property(e => e.etag).HasMaxLength(20);
             entity.Property(e => e.metadata_json).HasColumnType("jsonb");
         });
 

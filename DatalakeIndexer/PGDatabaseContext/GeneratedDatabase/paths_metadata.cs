@@ -8,4 +8,6 @@ public partial class paths_metadata
     public byte[] path_key { get; set; } = null!;
 
     public string? metadata_json { get; set; }
+
+    public string etag { get; set; } = null!;
 }

@@ -19,5 +19,5 @@ public partial class paths
 
     public DateTime? deleted_on { get; set; }
 
-    public string? etag { get; set; }
+    public string etag { get; set; } = null!;
 }

@@ -59,13 +59,21 @@ public class PGServerIndexer(NpgsqlDataSource dataSource, ILogger<PGServerIndexe
             ON paths.path_key = paths_temp.path_key
             WHEN MATCHED AND paths.etag IS NULL OR paths.etag != paths_temp.etag THEN
                 UPDATE SET 
+                    etag = paths_temp.etag,
                     created_on = paths_temp.created_on, 
                     last_modified = paths_temp.last_modified, 
                     deleted_on = paths_temp.deleted_on 
 
             WHEN NOT MATCHED THEN
-                INSERT (filesystem_name, path, created_on, last_modified, deleted_on, path_key)
-                VALUES (paths_temp.filesystem_name, paths_temp.path, paths_temp.created_on, paths_temp.last_modified, paths_temp.deleted_on, paths_temp.path_key)
+                INSERT (filesystem_name, path, created_on, last_modified, deleted_on, path_key, etag)
+                VALUES (
+                    paths_temp.filesystem_name, 
+                    paths_temp.path, 
+                    paths_temp.created_on,
+                    paths_temp.last_modified, 
+                    paths_temp.deleted_on, 
+                    paths_temp.path_key,
+                    paths_temp.etag)
 
             RETURNING
                 merge_action() as action, paths_temp.*
@@ -143,12 +151,12 @@ public class PGServerIndexer(NpgsqlDataSource dataSource, ILogger<PGServerIndexe
             RETURNING
                 merge_action() as action, paths_metadata_temp.*
             ;
-            
+
             UPDATE paths
             SET etag = paths_metadata_temp.etag
             FROM paths_metadata_temp
             WHERE paths.path_key = paths_metadata_temp.path_key;
-            
+
             DROP TABLE paths_metadata_temp;
             """)).AsList();
 
