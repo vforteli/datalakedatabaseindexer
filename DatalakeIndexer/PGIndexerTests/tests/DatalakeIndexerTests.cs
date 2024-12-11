@@ -68,7 +68,11 @@ public class DatalakeIndexerTests : DatabaseTest
             Assert.That(actual[1].path, Is.EqualTo(paths[1].path));
         });
 
-        var updated = indexer.UpsertPathsAsync(paths).ToBlockingEnumerable().ToList();
+        var updatedPaths = paths.Select(o => o with { etag = "newetag" });
+
+        // this here is a breaking change... paths are no longer returned if etag doesnt change... 
+        // metadata_json moved into same table and also has a flag for indicating of metadata should be fetched
+        var updated = indexer.UpsertPathsAsync(updatedPaths).ToBlockingEnumerable().ToList();
 
         Assert.Multiple(() =>
         {

@@ -27,10 +27,12 @@ public partial class PgIndexerContext : DbContext
 
             entity.Property(e => e.etag).HasMaxLength(20);
             entity.Property(e => e.filesystem_name).HasMaxLength(255);
+            entity.Property(e => e.metadata_json).HasColumnType("jsonb");
             entity.Property(e => e.path).HasMaxLength(1024);
             entity.Property(e => e.path_reversed)
                 .HasMaxLength(1024)
                 .HasComputedColumnSql("reverse((path)::text)", true);
+            entity.Property(e => e.should_update_metadata).HasDefaultValue(true);
         });
 
         modelBuilder.Entity<paths_metadata>(entity =>

@@ -20,4 +20,8 @@ public partial class paths
     public DateTime? deleted_on { get; set; }
 
     public string etag { get; set; } = null!;
+
+    public string? metadata_json { get; set; }
+
+    public bool should_update_metadata { get; set; }
 }
