@@ -7,7 +7,7 @@ namespace DatabaseIndexerTests.Tests;
 public class DatabaseContextTest : DatabaseTest
 {
     [Test]
-    public async Task TestSomething()
+    public void TestSomething()
     {
         var context = SetupServiceProvider.GetRequiredService<DatalakeindexerContext>();
         Assert.DoesNotThrowAsync(async () => await context.Paths.SingleOrDefaultAsync(o => o.Path == "blaa"));

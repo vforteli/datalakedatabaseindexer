@@ -13,8 +13,6 @@ public partial class PgIndexerContext : DbContext
 
     public virtual DbSet<paths> paths { get; set; }
 
-    public virtual DbSet<paths_metadata> paths_metadata { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<paths>(entity =>
@@ -33,14 +31,6 @@ public partial class PgIndexerContext : DbContext
                 .HasMaxLength(1024)
                 .HasComputedColumnSql("reverse((path)::text)", true);
             entity.Property(e => e.should_update_metadata).HasDefaultValue(true);
-        });
-
-        modelBuilder.Entity<paths_metadata>(entity =>
-        {
-            entity.HasKey(e => e.path_key).HasName("paths_metadata_pk");
-
-            entity.Property(e => e.etag).HasMaxLength(20);
-            entity.Property(e => e.metadata_json).HasColumnType("jsonb");
         });
 
         OnModelCreatingPartial(modelBuilder);

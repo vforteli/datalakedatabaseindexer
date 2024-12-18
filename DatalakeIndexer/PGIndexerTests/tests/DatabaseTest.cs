@@ -33,7 +33,6 @@ public abstract class DatabaseTest : BaseTest
         await connection.ExecuteScalarAsync(
             """
             TRUNCATE TABLE paths;
-            TRUNCATE TABLE paths_metadata;
             """);
     }
 }

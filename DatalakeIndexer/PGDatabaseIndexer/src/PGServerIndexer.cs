@@ -128,22 +128,25 @@ public class PGServerIndexer(NpgsqlDataSource dataSource, ILogger<PGServerIndexe
     {
         await connection.ExecuteScalarAsync(
             """
-            CREATE TEMP TABLE paths_metadata_temp AS SELECT * FROM paths_metadata LIMIT 0;
-            ALTER TABLE paths_metadata_temp ALTER COLUMN metadata_json TYPE varchar(4096);
+            CREATE TEMP TABLE metadata_temp (
+                path_key bytea NOT NULL,
+                etag character varying(20) NOT NULL,
+                metadata_json varchar(4096)
+            );
             """);
 
-        await connection.BulkLoadAsync(logger, rows, "paths_metadata_temp");
+        await connection.BulkLoadAsync(logger, rows, "metadata_temp");
 
         var affectedRows = await connection.ExecuteAsync(
             """
             UPDATE paths
             SET 
-                metadata_json = paths_metadata_temp.metadata_json::jsonb,
+                metadata_json = metadata_temp.metadata_json::jsonb,
                 should_update_metadata = False
-            FROM paths_metadata_temp
-            WHERE paths.path_key = paths_metadata_temp.path_key;
+            FROM metadata_temp
+            WHERE paths.path_key = metadata_temp.path_key;
 
-            DROP TABLE paths_metadata_temp;
+            DROP TABLE metadata_temp;
             """);
 
         logger.LogInformation("Updated {rows} in metadata", affectedRows);
